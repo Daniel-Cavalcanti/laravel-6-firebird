@@ -6,7 +6,7 @@ I do not create my own Firebird databases, only read from existing ones so the ~
 
 ### Installation
 ```
-composer require kkszymanowski/laravel-6-firebird
+composer require Daniel-Cavalcanti/laravel-6-firebird
 ``` 
 Add you database configuration in `config/database.php`
 ```php
