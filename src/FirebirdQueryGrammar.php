@@ -2,8 +2,10 @@
 
 namespace Firebird;
 
+use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Database\Query\JoinClause;
 
 class FirebirdQueryGrammar extends Grammar
 {
@@ -152,5 +154,39 @@ class FirebirdQueryGrammar extends Grammar
     {
         $query_returning = $this->compileInsert($query, $values) . ' returning ' . $column;
         return $query_returning;
+    }
+
+
+    /**
+     * Wrap a value in keyword identifiers.
+     *
+     * @param  \Illuminate\Contracts\Database\Query\Expression|string  $value
+     * @param  bool  $prefixAlias
+     * @return string
+     */
+    public function wrap($value, $prefixAlias = false)
+    {
+        if ($this->isExpression($value)) {
+            return $this->getValue($value);
+        }
+
+        // If the value being wrapped has a column alias we will need to separate out
+        // the pieces so we can wrap each of the segments of the expression on its
+        // own, and then join these both back together using the "as" connector.
+        if (is_a($value, Closure::class) || is_a($value, JoinClause::class) || is_subclass_of($value, JoinClause::class)) {
+            throw new \Exception('Not implemented');
+        }
+        if (stripos($value, ' as ') !== false) {
+            return $this->wrapAliasedValue($value, $prefixAlias);
+        }
+
+        // If the given value is a JSON selector we will wrap it differently than a
+        // traditional value. We will need to split this path and wrap each part
+        // wrapped, etc. Otherwise, we will simply wrap the value as a string.
+        if ($this->isJsonSelector($value)) {
+            return $this->wrapJsonSelector($value);
+        }
+
+        return $this->wrapSegments(explode('.', $value));
     }
 }
