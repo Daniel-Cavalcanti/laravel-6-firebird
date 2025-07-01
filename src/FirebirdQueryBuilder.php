@@ -25,8 +25,7 @@ class FirebirdQueryBuilder extends Builder
     {
         //$this->applyBeforeQueryCallbacks();
         if ($column === null) {
-            dd($column);
-            throw new Error("Firebird needs a column when using insertGetId");
+            throw new \Error("Firebird needs a column when using insertGetId");
         }
 
         $sql = $this->grammar->compileInsertGetId($this, $values, $column);
